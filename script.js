@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let activeElement = null;
     let isBold = false;
     let isItalic = false;
+    let isDragging = false;
+    let isResizing = false;
+    let currentResizeHandle = null;
 
     // Função para aplicar cor à camisa
     function applyColorToShirt(color) {
@@ -88,11 +91,35 @@ document.addEventListener('DOMContentLoaded', function () {
     boldBtn.addEventListener('click', function() {
         isBold = !isBold;
         this.classList.toggle('active', isBold);
+        if (activeElement && activeElement.classList.contains('draggable-text')) {
+            activeElement.style.fontWeight = isBold ? 'bold' : 'normal';
+        }
     });
 
     italicBtn.addEventListener('click', function() {
         isItalic = !isItalic;
         this.classList.toggle('active', isItalic);
+        if (activeElement && activeElement.classList.contains('draggable-text')) {
+            activeElement.style.fontStyle = isItalic ? 'italic' : 'normal';
+        }
+    });
+
+    textColorInput.addEventListener('input', function() {
+        if (activeElement && activeElement.classList.contains('draggable-text')) {
+            activeElement.style.color = this.value;
+        }
+    });
+
+    fontFamilySelect.addEventListener('change', function() {
+        if (activeElement && activeElement.classList.contains('draggable-text')) {
+            activeElement.style.fontFamily = this.value;
+        }
+    });
+
+    fontSizeSelect.addEventListener('change', function() {
+        if (activeElement && activeElement.classList.contains('draggable-text')) {
+            activeElement.style.fontSize = this.value;
+        }
     });
 
     addTextBtn.addEventListener('click', function() {
@@ -118,22 +145,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const newImage = document.createElement('img');
         newImage.src = src;
         newImage.classList.add('draggable', 'draggable-image');
+        newImage.draggable = false; // Impedir comportamento padrão de arrastar
 
         newImage.style.position = 'absolute';
         newImage.style.left = '50%';
         newImage.style.top = '50%';
         newImage.style.transform = 'translate(-50%, -50%)';
-        newImage.style.maxWidth = '150px';
-        newImage.style.maxHeight = '150px';
+        newImage.style.maxWidth = '200px';
+        newImage.style.maxHeight = '200px';
+        newImage.style.width = '150px';
         newImage.style.zIndex = '10';
 
+        // Criar elemento de redimensionamento
+        const resizeHandle = document.createElement('div');
+        resizeHandle.classList.add('resize-handle');
+        
         shirtDisplay.appendChild(newImage);
-        makeDraggable(newImage, true);
+        newImage.appendChild(resizeHandle);
+        
+        makeDraggable(newImage);
+        makeResizable(newImage);
         
         // Selecionar automaticamente a nova imagem
-        document.querySelectorAll('.draggable').forEach(el => el.classList.remove('active'));
-        newImage.classList.add('active');
-        activeElement = newImage;
+        selectElement(newImage);
     }
 
     // Criar texto arrastável
@@ -141,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const textElement = document.createElement('div');
         textElement.classList.add('draggable', 'draggable-text');
         textElement.textContent = text;
+        textElement.contentEditable = true; // Permitir edição direta
         textElement.style.fontFamily = fontFamilySelect.value;
         textElement.style.fontSize = fontSizeSelect.value;
         textElement.style.color = textColorInput.value;
@@ -153,31 +188,26 @@ document.addEventListener('DOMContentLoaded', function () {
         textElement.style.zIndex = '10';
         textElement.style.cursor = 'move';
         textElement.style.padding = '5px';
+        textElement.style.minWidth = '50px';
+        textElement.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        textElement.style.borderRadius = '3px';
         
         shirtDisplay.appendChild(textElement);
-        makeDraggable(textElement, false);
+        makeDraggable(textElement);
         
         // Selecionar automaticamente o novo texto
-        document.querySelectorAll('.draggable').forEach(el => el.classList.remove('active'));
-        textElement.classList.add('active');
-        activeElement = textElement;
+        selectElement(textElement);
+        
+        // Atualizar controles quando o texto for editado
+        textElement.addEventListener('input', function() {
+            if (activeElement === this) {
+                textInput.value = this.textContent;
+            }
+        });
     }
 
-    // Tornar elementos arrastáveis
-   // Tornar elementos arrastáveis (com suporte a desktop e mobile)
-function makeDraggable(element, isImage) {
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-
-    // Função para iniciar o arraste
-    function startDrag(clientX, clientY) {
-        isDragging = true;
-        startX = clientX;
-        startY = clientY;
-        startLeft = parseInt(element.style.left) || 0;
-        startTop = parseInt(element.style.top) || 0;
-
-        // Destacar elemento selecionado
+    // Selecionar elemento
+    function selectElement(element) {
         document.querySelectorAll('.draggable').forEach(el => {
             el.classList.remove('active');
             el.style.zIndex = '10';
@@ -185,78 +215,213 @@ function makeDraggable(element, isImage) {
         element.classList.add('active');
         element.style.zIndex = '11';
         activeElement = element;
-
-        // Prevenir scroll na tela durante o arraste no mobile
-        element.style.touchAction = 'none';
-        document.body.style.overflow = 'hidden';
-    }
-
-    // Função para durante o arraste
-    function duringDrag(clientX, clientY) {
-        if (!isDragging) return;
         
-        const dx = clientX - startX;
-        const dy = clientY - startY;
+        // Atualizar controles para elementos de texto
+        if (element.classList.contains('draggable-text')) {
+            textInput.value = element.textContent;
+            fontFamilySelect.value = element.style.fontFamily;
+            fontSizeSelect.value = element.style.fontSize;
+            textColorInput.value = rgbToHex(element.style.color);
+            isBold = element.style.fontWeight === 'bold';
+            isItalic = element.style.fontStyle === 'italic';
+            boldBtn.classList.toggle('active', isBold);
+            italicBtn.classList.toggle('active', isItalic);
+        }
+    }
+
+    // Converter RGB para Hex
+    function rgbToHex(rgb) {
+        if (!rgb || rgb === '') return '#000000';
         
-        element.style.left = `${startLeft + dx}px`;
-        element.style.top = `${startTop + dy}px`;
-        element.style.transform = 'none';
-    }
-
-    // Função para finalizar o arraste
-    function endDrag() {
-        isDragging = false;
-        element.style.touchAction = '';
-        document.body.style.overflow = '';
+        if (rgb.startsWith('#')) return rgb;
         
-        // Remover listeners
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.removeEventListener('touchmove', onTouchMove);
-        document.removeEventListener('touchend', onTouchEnd);
+        const rgbValues = rgb.match(/\d+/g);
+        if (!rgbValues || rgbValues.length < 3) return '#000000';
+        
+        return '#' + rgbValues.map(x => {
+            const hex = parseInt(x).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
     }
 
-    // Event handlers para mouse
-    function onMouseDown(e) {
-        e.preventDefault();
-        startDrag(e.clientX, e.clientY);
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+    // Tornar elementos arrastáveis
+    function makeDraggable(element) {
+        let startX, startY, startLeft, startTop;
+
+        function startDrag(clientX, clientY) {
+            if (isResizing) return;
+            
+            isDragging = true;
+            startX = clientX;
+            startY = clientY;
+            
+            const computedStyle = window.getComputedStyle(element);
+            startLeft = parseInt(computedStyle.left) || 0;
+            startTop = parseInt(computedStyle.top) || 0;
+
+            selectElement(element);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function duringDrag(clientX, clientY) {
+            if (!isDragging) return;
+            
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            
+            element.style.left = `${startLeft + dx}px`;
+            element.style.top = `${startTop + dy}px`;
+            element.style.transform = 'none';
+        }
+
+        function endDrag() {
+            isDragging = false;
+            document.body.style.overflow = '';
+        }
+
+        // Event handlers para mouse
+        function onMouseDown(e) {
+            if (e.target.classList.contains('resize-handle')) return;
+            e.preventDefault();
+            startDrag(e.clientX, e.clientY);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            duringDrag(e.clientX, e.clientY);
+        }
+
+        function onMouseUp() {
+            endDrag();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        // Event handlers para touch
+        function onTouchStart(e) {
+            if (e.target.classList.contains('resize-handle')) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            startDrag(touch.clientX, touch.clientY);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onTouchEnd);
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            duringDrag(touch.clientX, touch.clientY);
+        }
+
+        function onTouchEnd() {
+            endDrag();
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        }
+
+        // Adicionar listeners para ambos mouse e touch
+        element.addEventListener('mousedown', onMouseDown);
+        element.addEventListener('touchstart', onTouchStart, { passive: false });
     }
 
-    function onMouseMove(e) {
-        duringDrag(e.clientX, e.clientY);
+    // Tornar elementos redimensionáveis (apenas para imagens)
+    function makeResizable(element) {
+        const resizeHandle = element.querySelector('.resize-handle');
+        if (!resizeHandle) return;
+
+        let startX, startY, startWidth, startHeight;
+
+        function startResize(clientX, clientY) {
+            isResizing = true;
+            startX = clientX;
+            startY = clientY;
+            startWidth = parseInt(element.offsetWidth);
+            startHeight = parseInt(element.offsetHeight);
+            
+            document.body.style.overflow = 'hidden';
+            selectElement(element);
+            currentResizeHandle = resizeHandle;
+            
+            // Adicionar classe para feedback visual
+            resizeHandle.classList.add('resizing');
+            element.classList.add('resizing');
+        }
+
+        function duringResize(clientX, clientY) {
+            if (!isResizing) return;
+            
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            
+            // Calcular novas dimensões mantendo a proporção
+            const scale = 1 + (dx / startWidth);
+            const newWidth = Math.max(50, startWidth * scale);
+            const newHeight = Math.max(50, startHeight * scale);
+            
+            element.style.width = `${newWidth}px`;
+            element.style.height = `${newHeight}px`;
+        }
+
+        function endResize() {
+            isResizing = false;
+            document.body.style.overflow = '';
+            currentResizeHandle = null;
+            
+            // Remover classe de feedback visual
+            if (resizeHandle) {
+                resizeHandle.classList.remove('resizing');
+            }
+            element.classList.remove('resizing');
+        }
+
+        // Event handlers para mouse
+        function onMouseDown(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            startResize(e.clientX, e.clientY);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            duringResize(e.clientX, e.clientY);
+        }
+
+        function onMouseUp() {
+            endResize();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        // Event handlers para touch
+        function onTouchStart(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const touch = e.touches[0];
+            startResize(touch.clientX, touch.clientY);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onTouchEnd);
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            duringResize(touch.clientX, touch.clientY);
+        }
+
+        function onTouchEnd() {
+            endResize();
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        }
+
+        // Adicionar listeners para o handle de redimensionamento
+        resizeHandle.addEventListener('mousedown', onMouseDown);
+        resizeHandle.addEventListener('touchstart', onTouchStart, { passive: false });
     }
 
-    function onMouseUp() {
-        endDrag();
-    }
-
-    // Event handlers para touch
-    function onTouchStart(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        startDrag(touch.clientX, touch.clientY);
-        document.addEventListener('touchmove', onTouchMove, { passive: false });
-        document.addEventListener('touchend', onTouchEnd);
-    }
-
-    function onTouchMove(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        duringDrag(touch.clientX, touch.clientY);
-    }
-
-    function onTouchEnd() {
-        endDrag();
-    }
-
-    // Adicionar listeners para ambos mouse e touch
-    element.addEventListener('mousedown', onMouseDown);
-    element.addEventListener('touchstart', onTouchStart, { passive: false });
-}
-
-    // Modal de ajuda - ESTA É A PARTE QUE ESTAVA COM PROBLEMAS
+    // Modal de ajuda
     helpButton.addEventListener('click', () => {
         modal.style.display = 'block';
     });
@@ -279,6 +444,11 @@ function makeDraggable(element, isImage) {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Gerando imagem...';
 
+        // Ocultar handles de redimensionamento temporariamente
+        document.querySelectorAll('.resize-handle').forEach(handle => {
+            handle.style.display = 'none';
+        });
+
         html2canvas(shirtDisplay, {
             scale: 2,
             useCORS: true,
@@ -289,11 +459,22 @@ function makeDraggable(element, isImage) {
             link.href = canvas.toDataURL('image/png');
             link.click();
 
+            // Restaurar handles de redimensionamento
+            document.querySelectorAll('.resize-handle').forEach(handle => {
+                handle.style.display = 'block';
+            });
+
             saveBtn.disabled = false;
             saveBtn.textContent = originalText;
         }).catch(error => {
             console.error('Erro ao gerar imagem:', error);
             alert('Ocorreu um erro ao gerar a imagem. Tente novamente.');
+            
+            // Restaurar handles de redimensionamento em caso de erro
+            document.querySelectorAll('.resize-handle').forEach(handle => {
+                handle.style.display = 'block';
+            });
+            
             saveBtn.disabled = false;
             saveBtn.textContent = originalText;
         });
@@ -308,4 +489,25 @@ function makeDraggable(element, isImage) {
             activeElement = null;
         }
     });
+
+    // Duplo clique em texto para editar
+    shirtDisplay.addEventListener('dblclick', function(e) {
+        if (e.target.classList.contains('draggable-text')) {
+            e.target.focus();
+            // Colocar cursor no final do texto
+            const range = document.createRange();
+            range.selectNodeContents(e.target);
+            range.collapse(false);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    });
+
+    // Prevenir comportamento padrão de toque em todo o documento
+    document.addEventListener('touchmove', function(e) {
+        if (isDragging || isResizing) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 });

@@ -8,7 +8,8 @@
 body {
     background-color: #f5f5f5;
     color: #333;
-    padding: 20px;
+    padding: 15px;
+    font-size: 14px;
 }
 
 .container {
@@ -18,36 +19,37 @@ body {
 
 h1, h2 {
     color: #2c3e50;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
 }
 
 /* Cards */
 .card {
     background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
 /* Card de seleção de blusa */
 .shirt-selection-card {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .selection-description {
-    font-size: 16px;
+    font-size: 14px;
     color: #555;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     line-height: 1.4;
 }
 
 .shirt-select {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border-radius: 5px;
     border: 1px solid #ddd;
-    font-size: 16px;
+    font-size: 14px;
     background-color: #fff;
     cursor: pointer;
 }
@@ -61,7 +63,7 @@ h1, h2 {
 .design-section {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 15px;
 }
 
 .shirt-card {
@@ -71,10 +73,10 @@ h1, h2 {
 
 /* Texto descritivo da pré-visualização */
 .shirt-preview-description {
-    font-size: 16px;
+    font-size: 14px;
     color: #555;
     text-align: center;
-    margin: 10px 0 20px;
+    margin: 8px 0 15px;
     font-weight: normal;
 }
 
@@ -83,7 +85,7 @@ h1, h2 {
     min-width: 250px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .color-picker-card, .upload-card, .text-card {
@@ -93,42 +95,42 @@ h1, h2 {
 /* Container da exibição da camisa */
 .shirt-display-container {
     width: 100%;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     background-color: #f6f1f1;
     border-radius: 5px;
-    margin-top: 15px;
+    margin-top: 12px;
 }
-
-
 
 /* Exibição da camisa */
 .shirt-display {
     position: relative;
-    min-height: 300px;
+    min-height: 250px;
     overflow: hidden;
     margin: 0 auto;
     width: fit-content;
     transform: translateZ(0);
+    touch-action: none;
 }
 
-.shirt-display svg#shirt-template {
+.shirt-display svg {
     max-width: 100%;
     height: auto;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+    transform: scale(0.9);
 }
 
 /* Seletor de cores */
 .color-options {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin: 20px 0;
+    gap: 8px;
+    margin: 15px 0;
 }
 
 .color-option {
     width: 100%;
-    height: 40px;
+    height: 35px;
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s;
@@ -143,14 +145,15 @@ h1, h2 {
 .selected-color {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 12px;
     font-weight: bold;
+    font-size: 14px;
 }
 
 .color-preview {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     border: 1px solid #ccc;
 }
@@ -160,13 +163,15 @@ h1, h2 {
     background-color: #3498db;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
+    font-size: 14px;
+    min-height: 44px;
 }
 
 .btn-upload:hover {
@@ -174,19 +179,20 @@ h1, h2 {
 }
 
 .controls {
-    margin-top: 15px;
+    margin-top: 12px;
 }
 
 .btn-control {
     background-color: #e74c3c;
     color: white;
     border: none;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     transition: opacity 0.3s;
     width: 100%;
+    min-height: 44px;
 }
 
 .btn-control:disabled {
@@ -201,8 +207,9 @@ h1, h2 {
     user-select: none;
     z-index: 10;
     max-width: 200px;
-    transition: border 0.2s;
+    transition: border 0.2s, box-shadow 0.2s;
     transform: translateZ(0);
+    touch-action: none;
 }
 
 .draggable-image {
@@ -214,39 +221,108 @@ h1, h2 {
     border: 2px dashed rgba(0, 0, 0, 0.5) !important;
 }
 
-.draggable-image::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 15px;
-    height: 15px;
-    background-color: #3498db;
-    cursor: nwse-resize;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.draggable-image:hover::after {
-    opacity: 1;
-}
-
 .draggable-text {
-    padding: 5px;
+    padding: 8px;
     border: 2px dashed transparent;
     word-wrap: break-word;
     text-align: center;
+    min-width: 60px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
 }
 
 .draggable-text:hover, .draggable-text.active {
     border: 2px dashed rgba(0, 0, 0, 0.5) !important;
 }
 
+/* Handle de redimensionamento para imagens - 4 SETAS NOS CANTOS */
+.resize-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #3498db;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 12;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.resize-handle::before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+}
+
+.resize-handle.top-left {
+    top: -10px;
+    left: -10px;
+    cursor: nwse-resize;
+}
+
+.resize-handle.top-left::before {
+    border-width: 0 5px 8px 5px;
+    border-color: transparent transparent #ffffff transparent;
+    transform: rotate(45deg);
+}
+
+.resize-handle.top-right {
+    top: -10px;
+    right: -10px;
+    cursor: nesw-resize;
+}
+
+.resize-handle.top-right::before {
+    border-width: 0 5px 8px 5px;
+    border-color: transparent transparent #ffffff transparent;
+    transform: rotate(-45deg);
+}
+
+.resize-handle.bottom-left {
+    bottom: -10px;
+    left: -10px;
+    cursor: nesw-resize;
+}
+
+.resize-handle.bottom-left::before {
+    border-width: 8px 5px 0 5px;
+    border-color: #ffffff transparent transparent transparent;
+    transform: rotate(-45deg);
+}
+
+.resize-handle.bottom-right {
+    bottom: -10px;
+    right: -10px;
+    cursor: nwse-resize;
+}
+
+.resize-handle.bottom-right::before {
+    border-width: 8px 5px 0 5px;
+    border-color: #ffffff transparent transparent transparent;
+    transform: rotate(45deg);
+}
+
+.draggable-image:hover .resize-handle,
+.draggable-image.active .resize-handle {
+    opacity: 1;
+}
+
+.resize-handle:hover {
+    transform: scale(1.2);
+    background-color: #2980b9;
+}
+
 /* Estilos para o card de texto */
 .text-controls {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 #text-input {
@@ -254,7 +330,8 @@ h1, h2 {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ddd;
-    font-size: 16px;
+    font-size: 14px;
+    min-height: 44px;
 }
 
 .text-options {
@@ -265,21 +342,23 @@ h1, h2 {
 }
 
 .text-options select {
-    padding: 5px;
+    padding: 8px;
     border-radius: 5px;
     border: 1px solid #ddd;
     font-size: 14px;
     flex: 1;
-    min-width: 120px;
+    min-width: 100px;
+    min-height: 44px;
 }
 
 .text-options input[type="color"] {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border: 1px solid #ddd;
     border-radius: 50%;
     padding: 0;
     cursor: pointer;
+    min-height: 44px;
 }
 
 .font-style-buttons {
@@ -294,11 +373,12 @@ h1, h2 {
     padding: 5px 10px;
     cursor: pointer;
     transition: background-color 0.2s;
-    width: 35px;
-    height: 35px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
 }
 
 .style-btn:hover {
@@ -310,8 +390,6 @@ h1, h2 {
     color: white;
 }
 
-
-
 /* Modal de Instruções */
 .modal {
     display: none;
@@ -322,6 +400,7 @@ h1, h2 {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.7);
+    overflow: auto;
 }
 
 .modal-content {
@@ -329,8 +408,8 @@ h1, h2 {
     margin: 10% auto;
     padding: 20px;
     border-radius: 10px;
-    width: 80%;
-    max-width: 600px;
+    width: 90%;
+    max-width: 500px;
     position: relative;
 }
 
@@ -348,75 +427,210 @@ h1, h2 {
 }
 
 .modal-content ol {
-    margin: 20px 0;
+    margin: 15px 0;
     padding-left: 20px;
 }
 
 .modal-content ol li {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .help-button {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  z-index: 99;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background-color: #007bff;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  border: none;
-
-  /* Alinhamento central */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    z-index: 99;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .help-button:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
-/* Responsividade */
+/* Feedback visual para elementos sendo arrastados */
+.draggable.active {
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+}
+
+/* Melhorar a usabilidade em dispositivos touch */
+.draggable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* RESPONSIVIDADE PARA MOBILE */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1, h2 {
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+    }
+    
+    .card {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
     .design-section {
         flex-direction: column;
+        gap: 12px;
+    }
+    
+    .shirt-card, .customization-card {
+        min-width: 100%;
+    }
+    
+    .shirt-display-container {
+        padding: 10px;
+    }
+    
+    .shirt-display {
+        min-height: 200px;
+    }
+    
+    .shirt-display svg {
+        transform: scale(0.8);
     }
     
     .color-options {
         grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .modal-content {
-        margin: 20% auto;
-        width: 90%;
-    }
-
-    .text-options select {
-        min-width: 100px;
-    }
-    /* Melhorias para mobile */
-@media (max-width: 768px) {
-    .draggable {
-        touch-action: none; /* Impede comportamentos padrão do navegador no touch */
-    }
-    
-    .shirt-display {
-        touch-action: none; /* Para o container também */
-    }
-    
-    /* Melhorar área de toque para elementos interativos */
-    .btn-upload, .btn-control, .style-btn {
-        min-height: 44px; /* Tamanho mínimo recomendado para elementos touch */
+        gap: 6px;
     }
     
     .color-option {
-        height: 44px; /* Maior área de toque para as cores */
+        height: 30px;
+    }
+    
+    .btn-upload, .btn-control {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    .text-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .text-options select {
+        min-width: 100%;
+    }
+    
+    .font-style-buttons {
+        justify-content: center;
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        padding: 15px;
+        width: 95%;
+    }
+    
+    .modal-content ol li {
+        font-size: 13px;
+    }
+    
+    /* Melhorar a experiência em mobile */
+    .resize-handle {
+        width: 24px;
+        height: 24px;
+        background-color: #2980b9;
+        border: 2px solid white;
+        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+    }
+    
+    .draggable-text {
+        font-size: 16px; /* Maior para melhor legibilidade em mobile */
+        padding: 10px;
+    }
+    
+    /* Ajustar o SVG da camisa para caber melhor em mobile */
+    .shirt-display svg {
+        width: 280px;
+        height: auto;
     }
 }
+
+@media (max-width: 480px) {
+    h1, h2 {
+        font-size: 1.2rem;
+    }
+    
+    .color-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .shirt-display svg {
+        width: 250px;
+    }
+    
+    .text-options select {
+        font-size: 13px;
+    }
+    
+    .style-btn {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Melhorar a visualização em telas muito pequenas */
+@media (max-width: 360px) {
+    .shirt-display svg {
+        width: 220px;
+    }
+    
+    .color-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .btn-upload, .btn-control {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+/* Animações suaves para transições */
+.draggable {
+    transition: transform 0.1s ease;
+}
+
+.btn-upload, .btn-control, .style-btn {
+    transition: all 0.2s ease;
+}
+
+/* Estilo para quando um elemento está sendo arrastado */
+.draggable.dragging {
+    opacity: 0.8;
+    transform: scale(1.05);
+    z-index: 100;
+}
+
+/* Estilo para o handle de redimensionamento quando ativo */
+.resize-handle.resizing {
+    background-color: #2c3e50;
+    transform: scale(1.3);
+}
+
+/* Efeito de destaque na imagem durante redimensionamento */
+.draggable-image.resizing {
+    outline: 2px solid #3498db;
 }
