@@ -400,4 +400,23 @@ h1, h2 {
     .text-options select {
         min-width: 100px;
     }
+    /* Melhorias para mobile */
+@media (max-width: 768px) {
+    .draggable {
+        touch-action: none; /* Impede comportamentos padrão do navegador no touch */
+    }
+    
+    .shirt-display {
+        touch-action: none; /* Para o container também */
+    }
+    
+    /* Melhorar área de toque para elementos interativos */
+    .btn-upload, .btn-control, .style-btn {
+        min-height: 44px; /* Tamanho mínimo recomendado para elementos touch */
+    }
+    
+    .color-option {
+        height: 44px; /* Maior área de toque para as cores */
+    }
+}
 }

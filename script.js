@@ -164,48 +164,97 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Tornar elementos arrastáveis
-    function makeDraggable(element, isImage) {
-        let isDragging = false;
-        let startX, startY, startLeft, startTop;
+   // Tornar elementos arrastáveis (com suporte a desktop e mobile)
+function makeDraggable(element, isImage) {
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
 
-        element.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = element.offsetLeft;
-            startTop = element.offsetTop;
+    // Função para iniciar o arraste
+    function startDrag(clientX, clientY) {
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        startLeft = parseInt(element.style.left) || 0;
+        startTop = parseInt(element.style.top) || 0;
 
-            // Destacar elemento selecionado
-            document.querySelectorAll('.draggable').forEach(el => {
-                el.classList.remove('active');
-                el.style.zIndex = '10';
-            });
-            element.classList.add('active');
-            element.style.zIndex = '11';
-            activeElement = element;
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+        // Destacar elemento selecionado
+        document.querySelectorAll('.draggable').forEach(el => {
+            el.classList.remove('active');
+            el.style.zIndex = '10';
         });
+        element.classList.add('active');
+        element.style.zIndex = '11';
+        activeElement = element;
 
-        function onMouseMove(e) {
-            if (!isDragging) return;
-            
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            element.style.left = `${startLeft + dx}px`;
-            element.style.top = `${startTop + dy}px`;
-            element.style.transform = 'none';
-        }
-
-        function onMouseUp() {
-            isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
+        // Prevenir scroll na tela durante o arraste no mobile
+        element.style.touchAction = 'none';
+        document.body.style.overflow = 'hidden';
     }
+
+    // Função para durante o arraste
+    function duringDrag(clientX, clientY) {
+        if (!isDragging) return;
+        
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        
+        element.style.left = `${startLeft + dx}px`;
+        element.style.top = `${startTop + dy}px`;
+        element.style.transform = 'none';
+    }
+
+    // Função para finalizar o arraste
+    function endDrag() {
+        isDragging = false;
+        element.style.touchAction = '';
+        document.body.style.overflow = '';
+        
+        // Remover listeners
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+    }
+
+    // Event handlers para mouse
+    function onMouseDown(e) {
+        e.preventDefault();
+        startDrag(e.clientX, e.clientY);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    function onMouseMove(e) {
+        duringDrag(e.clientX, e.clientY);
+    }
+
+    function onMouseUp() {
+        endDrag();
+    }
+
+    // Event handlers para touch
+    function onTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        startDrag(touch.clientX, touch.clientY);
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+    }
+
+    function onTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        duringDrag(touch.clientX, touch.clientY);
+    }
+
+    function onTouchEnd() {
+        endDrag();
+    }
+
+    // Adicionar listeners para ambos mouse e touch
+    element.addEventListener('mousedown', onMouseDown);
+    element.addEventListener('touchstart', onTouchStart, { passive: false });
+}
 
     // Modal de ajuda - ESTA É A PARTE QUE ESTAVA COM PROBLEMAS
     helpButton.addEventListener('click', () => {
