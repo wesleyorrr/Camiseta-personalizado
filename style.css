@@ -32,34 +32,6 @@ h1, h2 {
     margin-bottom: 15px;
 }
 
-/* Card de seleção de blusa */
-.shirt-selection-card {
-    margin-bottom: 15px;
-}
-
-.selection-description {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 12px;
-    line-height: 1.4;
-}
-
-.shirt-select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-.shirt-select:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
 .design-section {
     display: flex;
     flex-wrap: wrap;
@@ -88,7 +60,7 @@ h1, h2 {
     gap: 15px;
 }
 
-.color-picker-card, .upload-card, .text-card {
+.color-picker-card, .upload-card, .text-card, .resize-card {
     width: 100%;
 }
 
@@ -221,91 +193,59 @@ h1, h2 {
     border: 2px dashed rgba(0, 0, 0, 0.5) !important;
 }
 
+/* TEXTO SEM REALCE - Modificado para evitar que o JavaScript adicione estilos indesejados */
 .draggable-text {
     padding: 8px;
     border: 2px dashed transparent;
     word-wrap: break-word;
     text-align: center;
     min-width: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 4px;
+    /* Removido o fundo e a borda arredondada */
+    background-color: transparent !important;
+    border-radius: 0 !important;
 }
 
 .draggable-text:hover, .draggable-text.active {
     border: 2px dashed rgba(0, 0, 0, 0.5) !important;
+    background-color: transparent !important;
 }
 
-/* Handle de redimensionamento para imagens - 4 SETAS NOS CANTOS */
+/* Handle de redimensionamento para imagens */
 .resize-handle {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     background-color: #3498db;
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.2s, transform 0.2s;
     z-index: 12;
     touch-action: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
-.resize-handle::before {
-    content: "";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    position: absolute;
-}
-
 .resize-handle.top-left {
-    top: -10px;
-    left: -10px;
+    top: -8px;
+    left: -8px;
     cursor: nwse-resize;
-}
-
-.resize-handle.top-left::before {
-    border-width: 0 5px 8px 5px;
-    border-color: transparent transparent #ffffff transparent;
-    transform: rotate(45deg);
 }
 
 .resize-handle.top-right {
-    top: -10px;
-    right: -10px;
+    top: -8px;
+    right: -8px;
     cursor: nesw-resize;
-}
-
-.resize-handle.top-right::before {
-    border-width: 0 5px 8px 5px;
-    border-color: transparent transparent #ffffff transparent;
-    transform: rotate(-45deg);
 }
 
 .resize-handle.bottom-left {
-    bottom: -10px;
-    left: -10px;
+    bottom: -8px;
+    left: -8px;
     cursor: nesw-resize;
 }
 
-.resize-handle.bottom-left::before {
-    border-width: 8px 5px 0 5px;
-    border-color: #ffffff transparent transparent transparent;
-    transform: rotate(-45deg);
-}
-
 .resize-handle.bottom-right {
-    bottom: -10px;
-    right: -10px;
+    bottom: -8px;
+    right: -8px;
     cursor: nwse-resize;
-}
-
-.resize-handle.bottom-right::before {
-    border-width: 8px 5px 0 5px;
-    border-color: #ffffff transparent transparent transparent;
-    transform: rotate(45deg);
 }
 
 .draggable-image:hover .resize-handle,
@@ -388,6 +328,27 @@ h1, h2 {
 .style-btn.active {
     background-color: #3498db;
     color: white;
+}
+
+/* Card de redimensionamento */
+.resize-card {
+    display: none; /* Inicialmente oculto */
+}
+
+.resize-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#resize-slider {
+    width: 100%;
+    margin: 8px 0;
+}
+
+#size-value {
+    font-weight: bold;
+    color: #3498db;
 }
 
 /* Modal de Instruções */
@@ -474,7 +435,7 @@ h1, h2 {
     user-select: none;
 }
 
-/* RESPONSIVIDADE PARA MOBILE */
+/* RESPONSIVIDADE PARA MOBILE - MELHORIAS PARA UPLOAD */
 @media (max-width: 768px) {
     body {
         padding: 10px;
@@ -550,8 +511,8 @@ h1, h2 {
     
     /* Melhorar a experiência em mobile */
     .resize-handle {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         background-color: #2980b9;
         border: 2px solid white;
         box-shadow: 0 0 3px rgba(0,0,0,0.5);
@@ -566,6 +527,28 @@ h1, h2 {
     .shirt-display svg {
         width: 280px;
         height: auto;
+    }
+    
+    /* Melhorias específicas para upload em mobile */
+    .upload-card {
+        position: relative;
+    }
+    
+    /* Garantir que o input de arquivo seja acessível em mobile */
+    #image-upload {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    #upload-button {
+        position: relative;
+        z-index: 5;
     }
 }
 

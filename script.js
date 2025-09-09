@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const addTextBtn = document.getElementById('add-text-btn');
     const deleteTextBtn = document.getElementById('delete-text');
     const saveBtn = document.getElementById('save-design');
+    
+    // Elementos do DOM para redimensionamento
+    const resizeCard = document.querySelector('.resize-card');
+    const resizeSlider = document.getElementById('resize-slider');
+    const sizeValue = document.getElementById('size-value');
+    const applyResizeBtn = document.getElementById('apply-resize');
 
     // Variáveis de estado
     let activeElement = null;
@@ -29,6 +35,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let isDragging = false;
     let isResizing = false;
     let currentResizeHandle = null;
+    let startWidth, startHeight, startX, startY;
+    
+    // Variáveis para controle de redimensionamento
+    let originalWidth = 0;
+    let resizeTimeout = null;
 
     // Função para aplicar cor à camisa
     function applyColorToShirt(color) {
@@ -42,6 +53,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         currentColorDisplay.textContent = color;
         colorPreview.style.backgroundColor = color;
+    }
+
+    // Atualizar o card de redimensionamento quando uma imagem é selecionada
+    function updateResizeCard() {
+        if (activeElement && activeElement.classList.contains('draggable-image')) {
+            resizeCard.style.display = 'block';
+            originalWidth = parseInt(activeElement.style.width) || 150;
+            resizeSlider.value = 100;
+            sizeValue.textContent = '100%';
+            applyResizeBtn.disabled = false;
+        } else {
+            resizeCard.style.display = 'none';
+            applyResizeBtn.disabled = true;
+        }
     }
 
     // Event listeners para seleção de cores
@@ -62,8 +87,20 @@ document.addEventListener('DOMContentLoaded', function () {
         colorOptions[0].style.border = '2px solid #2c3e50';
     }
 
-    // Upload de imagem
-    uploadButton.addEventListener('click', () => imageUpload.click());
+    // Upload de imagem - CORREÇÃO PARA MOBILE
+    uploadButton.addEventListener('click', (e) => {
+        // Prevenir comportamento padrão em mobile
+        e.preventDefault();
+        e.stopPropagation();
+        imageUpload.click();
+    });
+
+    // Adicionar evento de toque para mobile
+    uploadButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        imageUpload.click();
+    }, { passive: false });
 
     imageUpload.addEventListener('change', function (e) {
         if (e.target.files && e.target.files[0]) {
@@ -83,6 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
             activeElement = null;
             if (document.querySelectorAll('.draggable-image').length === 0) {
                 deleteButton.disabled = true;
+                
+                // Ocultar card de redimensionamento
+                resizeCard.style.display = 'none';
             }
         }
     });
@@ -141,6 +181,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Event listener para o slider de redimensionamento
+    resizeSlider.addEventListener('input', function() {
+        sizeValue.textContent = `${this.value}%`;
+        
+        // Atualizar visualmente em tempo real (com debounce para performance)
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (activeElement && activeElement.classList.contains('draggable-image')) {
+                const newWidth = (originalWidth * this.value) / 100;
+                activeElement.style.width = `${newWidth}px`;
+            }
+        }, 100);
+    });
+
+    // Event listener para o botão de aplicar redimensionamento
+    applyResizeBtn.addEventListener('click', function() {
+        if (activeElement && activeElement.classList.contains('draggable-image')) {
+            // Atualizar a largura original para futuros redimensionamentos
+            originalWidth = parseInt(activeElement.style.width) || 150;
+        }
+    });
+
     function createDraggableImage(src) {
         const newImage = document.createElement('img');
         newImage.src = src;
@@ -156,21 +218,35 @@ document.addEventListener('DOMContentLoaded', function () {
         newImage.style.width = '150px';
         newImage.style.zIndex = '10';
 
-        // Criar elemento de redimensionamento
-        const resizeHandle = document.createElement('div');
-        resizeHandle.classList.add('resize-handle');
+        // Criar elementos de redimensionamento
+        const resizeHandles = [
+            { position: 'top-left', cursor: 'nwse-resize' },
+            { position: 'top-right', cursor: 'nesw-resize' },
+            { position: 'bottom-left', cursor: 'nesw-resize' },
+            { position: 'bottom-right', cursor: 'nwse-resize' }
+        ];
         
         shirtDisplay.appendChild(newImage);
-        newImage.appendChild(resizeHandle);
+        
+        // Adicionar handles de redimensionamento
+        resizeHandles.forEach(handle => {
+            const resizeHandle = document.createElement('div');
+            resizeHandle.classList.add('resize-handle', handle.position);
+            resizeHandle.style.cursor = handle.cursor;
+            newImage.appendChild(resizeHandle);
+        });
         
         makeDraggable(newImage);
         makeResizable(newImage);
         
         // Selecionar automaticamente a nova imagem
         selectElement(newImage);
+        
+        // Inicializar o card de redimensionamento
+        updateResizeCard();
     }
 
-    // Criar texto arrastável
+    // Criar texto arrastável (MODIFICADO para não aplicar realce)
     function createDraggableText(text) {
         const textElement = document.createElement('div');
         textElement.classList.add('draggable', 'draggable-text');
@@ -189,8 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
         textElement.style.cursor = 'move';
         textElement.style.padding = '5px';
         textElement.style.minWidth = '50px';
-        textElement.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-        textElement.style.borderRadius = '3px';
+        // REMOVIDO: background-color e border-radius
+        textElement.style.backgroundColor = 'transparent';
+        textElement.style.borderRadius = '0';
         
         shirtDisplay.appendChild(textElement);
         makeDraggable(textElement);
@@ -204,13 +281,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 textInput.value = this.textContent;
             }
         });
+        
+        // Prevenir que estilos indesejados sejam aplicados durante a edição
+        textElement.addEventListener('blur', function() {
+            this.style.backgroundColor = 'transparent';
+            this.style.borderRadius = '0';
+        });
     }
 
-    // Selecionar elemento
+    // Selecionar elemento (MODIFICADO para garantir que o texto não tenha realce)
     function selectElement(element) {
         document.querySelectorAll('.draggable').forEach(el => {
             el.classList.remove('active');
             el.style.zIndex = '10';
+            // Garantir que o texto mantenha o estilo correto mesmo quando não selecionado
+            if (el.classList.contains('draggable-text')) {
+                el.style.backgroundColor = 'transparent';
+                el.style.borderRadius = '0';
+            }
         });
         element.classList.add('active');
         element.style.zIndex = '11';
@@ -226,6 +314,19 @@ document.addEventListener('DOMContentLoaded', function () {
             isItalic = element.style.fontStyle === 'italic';
             boldBtn.classList.toggle('active', isBold);
             italicBtn.classList.toggle('active', isItalic);
+            
+            // Garantir que o texto selecionado mantenha o estilo correto
+            element.style.backgroundColor = 'transparent';
+            element.style.borderRadius = '0';
+            
+            // Ocultar card de redimensionamento
+            resizeCard.style.display = 'none';
+        }
+        
+        // Atualizar controles para elementos de imagem
+        if (element.classList.contains('draggable-image')) {
+            // Mostrar card de redimensionamento
+            updateResizeCard();
         }
     }
 
@@ -327,98 +428,105 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Tornar elementos redimensionáveis (apenas para imagens)
     function makeResizable(element) {
-        const resizeHandle = element.querySelector('.resize-handle');
-        if (!resizeHandle) return;
+        const resizeHandles = element.querySelectorAll('.resize-handle');
+        if (!resizeHandles.length) return;
 
-        let startX, startY, startWidth, startHeight;
+        resizeHandles.forEach(handle => {
+            handle.addEventListener('mousedown', initResize);
+            handle.addEventListener('touchstart', initResizeTouch, { passive: false });
+        });
 
-        function startResize(clientX, clientY) {
+        function initResize(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
             isResizing = true;
-            startX = clientX;
-            startY = clientY;
+            startX = e.clientX;
+            startY = e.clientY;
             startWidth = parseInt(element.offsetWidth);
             startHeight = parseInt(element.offsetHeight);
             
             document.body.style.overflow = 'hidden';
             selectElement(element);
-            currentResizeHandle = resizeHandle;
+            currentResizeHandle = e.target;
             
             // Adicionar classe para feedback visual
-            resizeHandle.classList.add('resizing');
             element.classList.add('resizing');
+            resizeHandles.forEach(h => h.classList.add('resizing'));
+            
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
         }
 
-        function duringResize(clientX, clientY) {
+        function initResizeTouch(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            isResizing = true;
+            startX = touch.clientX;
+            startY = touch.clientY;
+            startWidth = parseInt(element.offsetWidth);
+            startHeight = parseInt(element.offsetHeight);
+            
+            document.body.style.overflow = 'hidden';
+            selectElement(element);
+            currentResizeHandle = e.target;
+            
+            // Adicionar classe para feedback visual
+            element.classList.add('resizing');
+            resizeHandles.forEach(h => h.classList.add('resizing'));
+            
+            document.addEventListener('touchmove', resizeTouch, { passive: false });
+            document.addEventListener('touchend', stopResize);
+        }
+
+        function resize(e) {
             if (!isResizing) return;
             
-            const dx = clientX - startX;
-            const dy = clientY - startY;
+            const width = startWidth + (e.clientX - startX);
+            const height = startHeight + (e.clientY - startY);
             
-            // Calcular novas dimensões mantendo a proporção
-            const scale = 1 + (dx / startWidth);
-            const newWidth = Math.max(50, startWidth * scale);
-            const newHeight = Math.max(50, startHeight * scale);
+            // Definir tamanho mínimo
+            const minSize = 50;
+            const newWidth = Math.max(minSize, width);
+            const newHeight = Math.max(minSize, height);
             
             element.style.width = `${newWidth}px`;
             element.style.height = `${newHeight}px`;
         }
 
-        function endResize() {
+        function resizeTouch(e) {
+            if (!isResizing) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const width = startWidth + (touch.clientX - startX);
+            const height = startHeight + (touch.clientY - startY);
+            
+            // Definir tamanho mínimo
+            const minSize = 50;
+            const newWidth = Math.max(minSize, width);
+            const newHeight = Math.max(minSize, height);
+            
+            element.style.width = `${newWidth}px`;
+            element.style.height = `${newHeight}px`;
+        }
+
+        function stopResize() {
             isResizing = false;
             document.body.style.overflow = '';
             currentResizeHandle = null;
             
             // Remover classe de feedback visual
-            if (resizeHandle) {
-                resizeHandle.classList.remove('resizing');
-            }
             element.classList.remove('resizing');
+            resizeHandles.forEach(h => h.classList.remove('resizing'));
+            
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchmove', resizeTouch);
+            document.removeEventListener('touchend', stopResize);
         }
-
-        // Event handlers para mouse
-        function onMouseDown(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            startResize(e.clientX, e.clientY);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        }
-
-        function onMouseMove(e) {
-            duringResize(e.clientX, e.clientY);
-        }
-
-        function onMouseUp() {
-            endResize();
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        // Event handlers para touch
-        function onTouchStart(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            const touch = e.touches[0];
-            startResize(touch.clientX, touch.clientY);
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.addEventListener('touchend', onTouchEnd);
-        }
-
-        function onTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            duringResize(touch.clientX, touch.clientY);
-        }
-
-        function onTouchEnd() {
-            endResize();
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onTouchEnd);
-        }
-
-        // Adicionar listeners para o handle de redimensionamento
-        resizeHandle.addEventListener('mousedown', onMouseDown);
-        resizeHandle.addEventListener('touchstart', onTouchStart, { passive: false });
     }
 
     // Modal de ajuda
@@ -485,8 +593,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target === this) {
             document.querySelectorAll('.draggable').forEach(el => {
                 el.classList.remove('active');
+                // Garantir que o texto mantenha o estilo correto
+                if (el.classList.contains('draggable-text')) {
+                    el.style.backgroundColor = 'transparent';
+                    el.style.borderRadius = '0';
+                }
             });
             activeElement = null;
+            
+            // Ocultar card de redimensionamento
+            resizeCard.style.display = 'none';
         }
     });
 
