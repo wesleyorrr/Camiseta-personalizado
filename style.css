@@ -89,8 +89,7 @@ h1, h2 {
     max-width: 100%;
     height: auto;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
-    transform: scale(0.9);
-}
+   }
 
 /* Seletor de cores */
 .color-options {
@@ -468,10 +467,7 @@ h1, h2 {
         min-height: 200px;
     }
     
-    .shirt-display svg {
-        transform: scale(0.8);
-    }
-    
+      
     .color-options {
         grid-template-columns: repeat(3, 1fr);
         gap: 6px;
