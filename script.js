@@ -102,16 +102,20 @@ document.addEventListener('DOMContentLoaded', function () {
         imageUpload.click();
     }, { passive: false });
 
-    imageUpload.addEventListener('change', function (e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                createDraggableImage(event.target.result);
-                deleteButton.disabled = false;
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
+   imageUpload.addEventListener('change', function (e) {
+    if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            createDraggableImage(event.target.result);
+            deleteButton.disabled = false;
+            
+           
+            imageUpload.value = "";
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+
 
     // Remover imagem selecionada
     deleteButton.addEventListener('click', function() {
@@ -588,23 +592,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Clique fora dos elementos para deselecionar
-    shirtDisplay.addEventListener('click', function(e) {
-        if (e.target === this) {
-            document.querySelectorAll('.draggable').forEach(el => {
-                el.classList.remove('active');
-                // Garantir que o texto mantenha o estilo correto
-                if (el.classList.contains('draggable-text')) {
-                    el.style.backgroundColor = 'transparent';
-                    el.style.borderRadius = '0';
-                }
-            });
-            activeElement = null;
-            
-            // Ocultar card de redimensionamento
-            resizeCard.style.display = 'none';
-        }
-    });
+// clique fora do elemento para decelecionar
+
+ shirtDisplay.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('draggable') && !e.target.classList.contains('resize-handle')) {
+        document.querySelectorAll('.draggable').forEach(el => {
+            el.classList.remove('active');
+            if (el.classList.contains('draggable-text')) {
+                el.style.backgroundColor = 'transparent';
+                el.style.borderRadius = '0';
+            }
+        });
+        activeElement = null;
+        resizeCard.style.display = 'none';
+    }
+});
 
     // Duplo clique em texto para editar
     shirtDisplay.addEventListener('dblclick', function(e) {
